@@ -1,8 +1,10 @@
 import xml.etree.ElementTree;
 import geometry
+import progress
+import input
 
-def ReadAndParseInputFile(file):
-    print("Read and parse input file: " + file)
+def ReadAndParseInputFile(file:str):
+    print("Read and parse: " + file.removeprefix(input.root + '/' + input.folder + '/'))
     return xml.etree.ElementTree.parse(file)
 
 def ExtractCoordinatesFromText(text):
@@ -29,11 +31,14 @@ def ExtractAllCoordinates(parsed_kml):
     return result
 
 def ExtractAllLines(parsed_kml):
-    print("Extract all lines...", end=' ')
     ns = {'ns':'http://www.opengis.net/kml/2.2'}
     result = []
+    prog = progress.Progress('Extract all lines')
+    placemarks = parsed_kml.findall(".//*ns:Placemark", ns)
 
-    for placemark in parsed_kml.findall(".//*ns:Placemark", ns):
+    for index, placemark in enumerate(placemarks):
+        prog.update(int(index / len(placemarks) * 100))
+
         linestring = placemark.find(".//ns:LineString", ns)
         coordinates = linestring.find(".//ns:coordinates", ns)
 
@@ -59,5 +64,5 @@ def ExtractAllLines(parsed_kml):
         if not styleUrl is None:
             result[-1].style = styleUrl.text
 
-    print(str(len(result)))
+    prog.finish(' (' + str(len(result)) + ')')
     return result

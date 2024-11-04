@@ -1,5 +1,8 @@
 import geometry
 import math
+import progress
+
+unique_tiles = set()
 
 class TileId:
     x:int
@@ -105,15 +108,21 @@ def DetermineAffectedTiles(parsed_coordinates, tile_level):
     return tiles
 
 def DetermineAffectedTiles2(parsed_lines, tile_level):
-    print("Distribute lines among BBoxes they occupy on zoom level(" + str(tile_level) + ")...", end=' ')
+    # prog = progress.Progress("Distribute lines by tiles on level " + str(tile_level))
     tiles = dict()
     generator = TileIdGenerator(tile_level)
-    for line in parsed_lines:
+
+    for index, line in enumerate(parsed_lines):
+        # prog.update(int(index / len(parsed_lines) * 100))
+
         tile_id = generator.getTileId(coordinate=line.coordinate_from)
+        unique_tiles.add(tile_id)
         if tile_id in tiles.keys():
             tiles[tile_id].append(line)
         else:
             tiles[tile_id] = [line]
 
-    print(str(len(tiles.keys())) + " tiles")
+    # prog.update(100)
+    # prog.finish()
+    # print('(' + str(len(tiles.keys())) + ')')
     return tiles

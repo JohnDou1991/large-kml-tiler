@@ -1,4 +1,4 @@
-import xml, os, shutil
+import xml, os, config, progress
 
 def region(placemark, bbox, tile_level):
     region = xml.etree.ElementTree.SubElement(placemark, "Region")
@@ -9,7 +9,7 @@ def region(placemark, bbox, tile_level):
     xml.etree.ElementTree.SubElement(altBox, "west").text = str(bbox.ne.latitude)
 
     lod = xml.etree.ElementTree.SubElement(region, "Lod")
-    if tile_level != 1:
+    if tile_level != config.levels[-1]:
         xml.etree.ElementTree.SubElement(lod, "minLodPixels").text = '256'
     # if tile_level != 11:
     #     xml.etree.ElementTree.SubElement(lod, "maxLodPixels").text = '1024'
@@ -47,19 +47,20 @@ def bbox(folder, bbox):
         str(bbox.sw.latitude) + ',' + str(bbox.sw.longitude) + '\n'
     )
 
-def createDocFile():
-    print("Compute doc.kml for future KMZ...")
-
+def createDocFile(file_count:int):
+    prog = progress.Progress('Compute doc.kml')
     root = xml.etree.ElementTree.parse("resources/doc.kml")
     ns = {'ns':'http://www.opengis.net/kml/2.2'}
     doc = root.find(".//ns:Document", ns)
     level = 'Level1'
-    for dir, subdirs, files in os.walk('temp' + '/' + level):
+    for dir, subdirs, files in os.walk(config.temp_folder + '/' + level):
         for file in files:
             nlink = xml.etree.ElementTree.SubElement(doc, "NetworkLink")
-            name = os.path.join(dir, file).removeprefix('temp/')
+            name = os.path.join(dir, file).removeprefix(config.temp_folder + '/')
             xml.etree.ElementTree.SubElement(nlink, "name").text = 'L' + name.removeprefix('Level').removesuffix('.kml').replace('/',':')
             link = xml.etree.ElementTree.SubElement(nlink, "Link")
             xml.etree.ElementTree.SubElement(link, "href").text = name
+        prog.update(int(len(files) / file_count * 100))
 
-    root.write('temp' + '/doc.kml')
+    root.write(config.temp_folder + '/doc.kml')
+    prog.finish()

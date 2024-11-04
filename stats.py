@@ -1,3 +1,5 @@
+import config
+
 lines_count = {
     13:0,
     11:0,
@@ -19,8 +21,6 @@ dump_count = {
 }
 
 def dump():
-    print("Statistics: ")
-    indx = 13
-    while indx > 0:
-        print("Level " + str(indx) + ': ' + str(lines_count[indx]) + ' : ' + str(dump_count[indx]))
-        indx = indx - 2
+    print('------Statistics------')
+    for level in config.levels:
+        print("Level " + str(level) + ': ' + str(lines_count[level]) + ' : ' + str(dump_count[level]))
