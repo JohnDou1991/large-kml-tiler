@@ -3,6 +3,16 @@ This is a super proprietary script, will not work with almost anything.
 This script exists because working with large raw kmls is bloody suffering.
 It is designed to boost search space kmls performance.
 
+### HOW TO USE
+
+python3 optimize-kml.py --input=light
+
+'light' is a folder that contains only kmls to be processed by the script
+it must be in 'input' folder at the root folder of this project
+you can pick any folder right within 'input' folder
+
+### HOW IT WORKS
+
 All optimizations are coming from here: https://developers.google.com/kml/documentation/regions#regionbasednl
 
 This script does:
@@ -18,6 +28,8 @@ This script does:
 
 In short this script breaks input raw data into efficient tiled structure and packs it into kmz.
 kmz format helps to keep things in one piece and save up to 10x space.
+
+### FOR CONTRIBUTORS
 
 Major todo's:
  - need to avoid re-read or post-edit of kml files
