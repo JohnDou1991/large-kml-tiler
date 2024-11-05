@@ -1,4 +1,8 @@
-import config
+import src.common.config as config
+
+unique_tiles = {
+    1:set()
+}
 
 lines_count = {
     13:0,

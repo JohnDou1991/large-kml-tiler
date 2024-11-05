@@ -5,11 +5,7 @@ It is designed to boost search space kmls performance.
 
 ### HOW TO USE
 
-python3 optimize-kml.py --input=light
-
-'light' is a folder that contains only kmls to be processed by the script
-it must be in 'input' folder at the root folder of this project
-you can pick any folder right within 'input' folder
+python3 optimize-kml.py --input=<PATH>
 
 ### HOW IT WORKS
 
@@ -43,5 +39,4 @@ Minor todo's:
  - probably kmz layout can be improved for better appearance in GE's file explorer
 
 Known issues:
- - linking tiles doesn't link like it should. It only checks underlying level. (Level 9 attempts to link Level 11, but not Level 13)
- If there would be missing tile in between, linking will skip all underlying tiles, thus resulting kmz will not contain all data.
+ - (SOLEVD) linking tiles doesn't link like it should. It only checks underlying level. (Level 9 attempts to link Level 11, but not Level 13) If there would be missing tile in between, linking will skip all underlying tiles, thus resulting kmz will not contain all data.
