@@ -5,7 +5,7 @@ It is designed to boost search space kmls performance.
 
 ### HOW TO USE
 
-python3 optimize-kml.py --input=<PATH>
+python3 optimize-kml.py --input=PATH
 
 ### HOW IT WORKS
 
