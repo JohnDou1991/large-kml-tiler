@@ -2,7 +2,9 @@ import geometry
 import math
 import progress
 
-unique_tiles = set()
+unique_tiles = {
+    1:set()
+}
 
 class TileId:
     x:int
@@ -11,6 +13,8 @@ class TileId:
         return hasattr(another, 'x') and hasattr(another, 'y') and self.x == another.x and self.y == another.y
     def __hash__(self):
         return hash(str(self.x) + ':' + str(self.y))
+    def ToString(self):
+        return str(self.x) + ':' + str(self.y)
 
 class TileIdGenerator:
     level:int
@@ -112,11 +116,16 @@ def DetermineAffectedTiles2(parsed_lines, tile_level):
     tiles = dict()
     generator = TileIdGenerator(tile_level)
 
+    total_lines_count = len(parsed_lines)
     for index, line in enumerate(parsed_lines):
-        # prog.update(int(index / len(parsed_lines) * 100))
+        # prog.update(int(index / total_lines_count * 100))
 
         tile_id = generator.getTileId(coordinate=line.coordinate_from)
-        unique_tiles.add(tile_id)
+        if tile_level in unique_tiles.keys():
+            unique_tiles[tile_level].add(tile_id)
+        else:
+            unique_tiles[tile_level] = set()
+            unique_tiles[tile_level].add(tile_id)
         if tile_id in tiles.keys():
             tiles[tile_id].append(line)
         else:
@@ -124,5 +133,5 @@ def DetermineAffectedTiles2(parsed_lines, tile_level):
 
     # prog.update(100)
     # prog.finish()
-    # print('(' + str(len(tiles.keys())) + ')')
+    # print(str(tile_level) + ':' + str(len(tiles.keys())) + " tiles")
     return tiles

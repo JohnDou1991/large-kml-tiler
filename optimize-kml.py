@@ -20,16 +20,20 @@ def AddNetworkLinks(folder, tile, tile_level):
     level_dir = config.temp_folder + '/' + level_folder
 
     tile_id   = tiling.TileId()
-    step = 2 ** (config.levels[0] - config.levels[1])
+    step = 2 ** (config.levels[0] - config.levels[1]) # no good
     tile_id.x = tile.x * step
     tile_id.y = tile.y * step
 
+    # this is wrong
     for i in range(step):
         for j in range(step):
-            tile_id_str = str(tile_id.x+i) + ':' + str(tile_id.y+j)
-            output_filename = level_dir + '/' + tile_id_str + '.kml'
+            id = tiling.TileId()
+            id.x = tile_id.x + i
+            id.y = tile_id.y + j
 
-            if os.path.exists(output_filename):
+            if id in tiling.unique_tiles[tile_level]:
+                tile_id_str = str(id.x) + ':' + str(id.y)
+                output_filename = level_dir + '/' + tile_id_str + '.kml'
                 kml = xml.etree.ElementTree.parse(output_filename)
                 region = kml.find(".//Region")
                 nlink = xml.etree.ElementTree.SubElement(folder, "NetworkLink")
@@ -67,6 +71,9 @@ def CreateKmlTree(tile_id, lines, bbox, tile_level):
 def DistributeLines(parsed_lines) -> int:
     distributed_lines = misc.distribute(parsed_lines)
     prog = progress.Progress('Distribute lines by tiles')
+    processed_lines = 0
+    total_line_count = len(parsed_lines)
+
     for lvl in config.levels:
         generator = tiling.TileIdGenerator(lvl)
         level_folder = 'Level' + str(lvl)
@@ -78,25 +85,74 @@ def DistributeLines(parsed_lines) -> int:
             output_filename = level_dir + '/' + str(id.x) + ':' + str(id.y) + '.kml'
             tree = CreateKmlTree(id, lines, generator.getBoundingBox(id), lvl)
             kml.WriteDownKmlTree(tree, output_filename)
-        prog.update(int(len(distributed_lines[lvl]) / len(parsed_lines) * 100))
+        processed_lines += len(distributed_lines[lvl])
+        prog.update(int(processed_lines / total_line_count * 100))
     prog.finish('')
+
+link_tree = {
+    1:
+        {
+        }
+}
+
+def SetUplink(level:int, uplink: tiling.TileId, level2:int, id:tiling.TileId):
+    global link_count
+
+    if level < config.levels[-1]:
+        return
+
+    if uplink in tiling.unique_tiles[level]:
+        if not level in link_tree:
+            link_tree[level] = {uplink.ToString():[tuple([level2,id])]}
+        elif not uplink.ToString() in link_tree[level]:
+            link_tree[level][uplink.ToString()] = [tuple([level2,id])]
+        else:
+            link_tree[level][uplink.ToString()].append(tuple([level2,id]))
+    else:
+        up_tile_id = tiling.TileId()
+        up_tile_id.x = int(uplink.x / 4)
+        up_tile_id.y = int(uplink.y / 4)
+        SetUplink(level-2, up_tile_id, level2, id)
 
 def LinkTiles(total_file_count:int):
     prog = progress.Progress("Link tiles")
     processed_count = 0
-    for dir, subdirs, files in os.walk(config.temp_folder):
-        for index, file in enumerate(files):
+    for level in reversed(sorted(config.levels)):
+        for tile_id in tiling.unique_tiles[level]:
+            up_tile_id = tiling.TileId()
+            up_tile_id.x = int(tile_id.x / 4)
+            up_tile_id.y = int(tile_id.y / 4)
+            SetUplink(level-2, up_tile_id, level, tile_id)
+
+    for level in reversed(sorted(config.levels)):
+        if level == config.levels[0]:
+            continue
+
+        dir = config.temp_folder + '/' + 'Level' + str(level)
+        for index, file in enumerate(os.listdir(dir)):
             root = xml.etree.ElementTree.parse(os.path.join(dir, file))
             doc = root.find(".//Document")
             if not doc is None and not doc.find("Region") is None:
-                tile = file.removesuffix('.kml').split(':')
-                id = tiling.TileId()
-                id.x = int(tile[0])
-                id.y = int(tile[1])
-                AddNetworkLinks(doc, id, int(dir.removeprefix(config.temp_folder + '/Level')) + 2)
+                tile_str = file.removesuffix('.kml')
+                if tile_str in link_tree[level].keys():
+                    for lvl, id in link_tree[level][tile_str]:
+
+                        level_folder = 'Level' + str(lvl)
+                        level_dir = config.temp_folder + '/' + level_folder
+                        tile_id_str = str(id.x) + ':' + str(id.y)
+                        output_filename = level_dir + '/' + tile_id_str + '.kml'
+                        kml = xml.etree.ElementTree.parse(output_filename)
+                        region = kml.find(".//Region")
+                        nlink = xml.etree.ElementTree.SubElement(doc, "NetworkLink")
+                        nlink.append(region)
+                        link = xml.etree.ElementTree.SubElement(nlink, "Link")
+                        xml.etree.ElementTree.SubElement(nlink, "name").text = 'L' + str(lvl) + ':' + tile_id_str
+                        xml.etree.ElementTree.SubElement(link, "href").text = output_filename.replace(config.temp_folder + '/', '../')
+                        xml.etree.ElementTree.SubElement(link, "viewRefreshMode").text = 'onRegion'
+
                 root.write(os.path.join(dir, file))
                 prog.update(int((processed_count + index) / total_file_count * 100))
-        processed_count += len(files)
+        processed_count = processed_count + index
     prog.finish()
 
 def CreateResultKmz():
@@ -122,7 +178,9 @@ for indx, file in enumerate(os.listdir(cli.input.root + '/' + cli.input.folder))
     DistributeLines(parsed_lines)
 
 print('------Prepare Output------')
-total_files_count = len(tiling.unique_tiles)
+total_files_count=0
+for tiles in tiling.unique_tiles.values():
+    total_files_count += len(tiles)
 LinkTiles(total_files_count)
 dump.createDocFile(total_files_count)
 CreateResultKmz()
