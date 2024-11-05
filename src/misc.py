@@ -1,6 +1,6 @@
-import filters
-import stats
-import tiling
+import src.filters as filters
+import src.common.stats as stats
+import src.tiling as tiling
 
 def filter(parsed_lines, tile_level):
     result = []
@@ -30,6 +30,7 @@ def filter(parsed_lines, tile_level):
     #     else:
     #         result.append(line)
     return result
+
 def level(line):
     distance = tiling.DistanceBetweenCoordinates(line.coordinate_from, line.coordinate_to)
     for level in filters.tile_level.keys():

@@ -1,7 +1,9 @@
-import geometry
-import math
-import progress
+import src.geometry as geometry
+import src.utils.progress as progress
 
+import math
+
+# todo move to config
 unique_tiles = {
     1:set()
 }

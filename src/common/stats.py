@@ -1,4 +1,4 @@
-import config
+import src.common.config as config
 
 lines_count = {
     13:0,

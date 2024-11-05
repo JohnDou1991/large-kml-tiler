@@ -1,5 +1,5 @@
-import input
-import output
+import src.common.input as input
+import src.common.output as output
 
 import sys
 

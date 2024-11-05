@@ -1,7 +1,13 @@
-import xml.etree.ElementTree;
-import geometry
-import progress
-import input
+import src.common.config as config
+import src.common.input as input
+import src.tiling as tiling
+import src.misc as misc
+import src.geometry as geometry
+import src.utils.progress as progress
+import src.kml as kml
+
+import xml.etree.ElementTree
+import os
 
 def ReadAndParseInputFile(file:str):
     print("Read and parse: " + file.removeprefix(input.root + '/' + input.folder + '/'))
@@ -66,3 +72,24 @@ def ExtractAllLines(parsed_kml):
 
     prog.finish(' (' + str(len(result)) + ')')
     return result
+
+def DistributeLines(parsed_lines) -> int:
+    distributed_lines = misc.distribute(parsed_lines)
+    prog = progress.Progress('Distribute lines by tiles')
+    processed_lines = 0
+    total_line_count = len(parsed_lines)
+
+    for lvl in config.levels:
+        generator = tiling.TileIdGenerator(lvl)
+        level_folder = 'Level' + str(lvl)
+        level_dir = config.temp_folder + '/' + level_folder
+        if not os.path.isdir(level_dir):
+            os.mkdir(level_dir)
+        tiles = tiling.DetermineAffectedTiles2(distributed_lines[lvl], lvl)
+        for id,lines in tiles.items():
+            output_filename = level_dir + '/' + str(id.x) + ':' + str(id.y) + '.kml'
+            tree = kml.CreateTree(id, lines, generator.getBoundingBox(id), lvl)
+            kml.WriteDownKmlTree(tree, output_filename)
+        processed_lines += len(distributed_lines[lvl])
+        prog.update(int(processed_lines / total_line_count * 100))
+    prog.finish('')

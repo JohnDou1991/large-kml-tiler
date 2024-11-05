@@ -1,6 +1,9 @@
-import xml, os, config, progress
+import src.common.config as config
+import src.common.stats as stats
 
-def region(placemark, bbox, tile_level):
+import xml.etree.ElementTree
+
+def Region(placemark, bbox, tile_level):
     region = xml.etree.ElementTree.SubElement(placemark, "Region")
     altBox = xml.etree.ElementTree.SubElement(region, "LatLonAltBox")
     xml.etree.ElementTree.SubElement(altBox, "north").text = str(bbox.ne.longitude)
@@ -14,7 +17,7 @@ def region(placemark, bbox, tile_level):
     # if tile_level != 11:
     #     xml.etree.ElementTree.SubElement(lod, "maxLodPixels").text = '1024'
 
-def lines(folder, lines):
+def Lines(folder, lines):
     lines_folder = xml.etree.ElementTree.SubElement(folder, "Folder")
     xml.etree.ElementTree.SubElement(lines_folder, "name").text = "Lines"
 
@@ -31,7 +34,7 @@ def lines(folder, lines):
         xml.etree.ElementTree.SubElement(placemark, "description").text = line.description
         xml.etree.ElementTree.SubElement(placemark, "name").text = line.name
 
-def bbox(folder, bbox):
+def BBox(folder, bbox):
     placemark = xml.etree.ElementTree.SubElement(folder, "Placemark")
     xml.etree.ElementTree.SubElement(placemark, "name").text = "BoundingBox"
     xml.etree.ElementTree.SubElement(placemark, "styleUrl").text = "#m_ylw-pushpin"
@@ -47,20 +50,12 @@ def bbox(folder, bbox):
         str(bbox.sw.latitude) + ',' + str(bbox.sw.longitude) + '\n'
     )
 
-def createDocFile(file_count:int):
-    prog = progress.Progress('Compute doc.kml')
-    root = xml.etree.ElementTree.parse("resources/doc.kml")
-    ns = {'ns':'http://www.opengis.net/kml/2.2'}
-    doc = root.find(".//ns:Document", ns)
-    level = 'Level1'
-    for dir, subdirs, files in os.walk(config.temp_folder + '/' + level):
-        for file in files:
-            nlink = xml.etree.ElementTree.SubElement(doc, "NetworkLink")
-            name = os.path.join(dir, file).removeprefix(config.temp_folder + '/')
-            xml.etree.ElementTree.SubElement(nlink, "name").text = 'L' + name.removeprefix('Level').removesuffix('.kml').replace('/',':')
-            link = xml.etree.ElementTree.SubElement(nlink, "Link")
-            xml.etree.ElementTree.SubElement(link, "href").text = name
-        prog.update(int(len(files) / file_count * 100))
-
-    root.write(config.temp_folder + '/doc.kml')
-    prog.finish()
+# probably it is more efficient to dump each tile into separate file
+# in order to network link them afterwards
+# this will enable nested regions, which might solve lags on large scales
+def Tile(folder, bbox, tile_id, lines, tile_level):
+    stats.dump_count[tile_level] = stats.dump_count[tile_level] + len(lines)
+    Region(folder, bbox, tile_level)
+    Lines(folder, lines)
+    # BBox(folder, bbox)
+    # print(str(tile_level) + '/' + str(tile[0].x) + ':' + str(tile[0].y))
