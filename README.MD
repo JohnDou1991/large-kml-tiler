@@ -5,11 +5,7 @@ It is designed to boost search space kmls performance.
 
 ### HOW TO USE
 
-python3 optimize-kml.py --input=light
-
-'light' is a folder that contains only kmls to be processed by the script
-it must be in 'input' folder at the root folder of this project
-you can pick any folder right within 'input' folder
+python3 optimize-kml.py --input=<PATH>
 
 ### HOW IT WORKS
 

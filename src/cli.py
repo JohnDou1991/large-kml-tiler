@@ -4,7 +4,7 @@ import src.common.output as output
 import sys
 
 supported_arguments = {
-    '--input':'--input=FOLDER_NAME - input folder with all kmls'
+    '--input':'--input=PATH - path to folder with all kmls'
 }
 
 def print_supported():
@@ -28,7 +28,7 @@ def parse_argvs():
             match arg:
                 case '--input':
                     input.folder = value
-                    output.file = value + "-tiled"
+                    output.file = value.split('/')[-1] + "-tiled"
         else:
             print('\'' + arg + '\'' + ' is not supported')
             print_supported()

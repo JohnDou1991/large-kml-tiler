@@ -1,12 +1,9 @@
+import src.common.stats as stats
+
 import src.geometry as geometry
 import src.utils.progress as progress
 
 import math
-
-# todo move to config
-unique_tiles = {
-    1:set()
-}
 
 class TileId:
     x:int
@@ -123,11 +120,11 @@ def DetermineAffectedTiles2(parsed_lines, tile_level):
         # prog.update(int(index / total_lines_count * 100))
 
         tile_id = generator.getTileId(coordinate=line.coordinate_from)
-        if tile_level in unique_tiles.keys():
-            unique_tiles[tile_level].add(tile_id)
+        if tile_level in stats.unique_tiles.keys():
+            stats.unique_tiles[tile_level].add(tile_id)
         else:
-            unique_tiles[tile_level] = set()
-            unique_tiles[tile_level].add(tile_id)
+            stats.unique_tiles[tile_level] = set()
+            stats.unique_tiles[tile_level].add(tile_id)
         if tile_id in tiles.keys():
             tiles[tile_id].append(line)
         else:

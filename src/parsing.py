@@ -10,7 +10,7 @@ import xml.etree.ElementTree
 import os
 
 def ReadAndParseInputFile(file:str):
-    print("Read and parse: " + file.removeprefix(input.root + '/' + input.folder + '/'))
+    print("Read and parse: " + file.split('/')[-1])
     return xml.etree.ElementTree.parse(file)
 
 def ExtractCoordinatesFromText(text):

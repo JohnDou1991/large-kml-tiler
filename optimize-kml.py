@@ -1,10 +1,10 @@
-import src.cli as cli
 import src.common.config as config
-import src.parsing as parsing
+import src.common.stats as stats
 
+import src.cli as cli
 import src.kmz as kmz
 import src.link_tree as link_tree
-import src.tiling as tiling
+import src.parsing as parsing
 
 import os
 import time
@@ -17,14 +17,15 @@ if not os.path.isdir(config.temp_folder):
     os.mkdir(config.temp_folder)
 
 print('------Process Input------')
-for indx, file in enumerate(os.listdir(cli.input.root + '/' + cli.input.folder)):
-    parsed_kml = parsing.ReadAndParseInputFile(cli.input.root + '/' + cli.input.folder + '/' + file)
+path = os.path.abspath(os.path.expanduser(cli.input.folder))
+for indx, file in enumerate(os.listdir(path)):
+    parsed_kml = parsing.ReadAndParseInputFile(path + '/' + file)
     parsed_lines = parsing.ExtractAllLines(parsed_kml)
     parsing.DistributeLines(parsed_lines)
 
 print('------Prepare Output------')
 total_files_count=0
-for tiles in tiling.unique_tiles.values():
+for tiles in stats.unique_tiles.values():
     total_files_count += len(tiles)
 link_tree.LinkTiles(total_files_count)
 kmz.CreateDocFile(total_files_count)

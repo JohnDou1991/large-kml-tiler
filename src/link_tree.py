@@ -1,6 +1,8 @@
 import src.common.config as config
-import src.utils.progress as progress
+import src.common.stats as stats
+
 import src.tiling as tiling
+import src.utils.progress as progress
 
 import xml.etree.ElementTree
 import os
@@ -15,7 +17,7 @@ def SetUplink(level:int, uplink: tiling.TileId, level2:int, id:tiling.TileId):
     if level < config.levels[-1]:
         return
 
-    if uplink in tiling.unique_tiles[level]:
+    if uplink in stats.unique_tiles[level]:
         if not level in link_tree:
             link_tree[level] = {uplink.ToString():[tuple([level2,id])]}
         elif not uplink.ToString() in link_tree[level]:
@@ -32,13 +34,13 @@ def SetUplinks(total_file_count:int):
     prog = progress.Progress("Set uplinks")
     processed=0
     for level in reversed(sorted(config.levels)):
-        for index, tile_id in enumerate(tiling.unique_tiles[level]):
+        for index, tile_id in enumerate(stats.unique_tiles[level]):
             up_tile_id = tiling.TileId()
             up_tile_id.x = int(tile_id.x / 4)
             up_tile_id.y = int(tile_id.y / 4)
             SetUplink(level-2, up_tile_id, level, tile_id)
             prog.update(int((processed+index) / total_file_count * 100))
-        processed += len(tiling.unique_tiles[level])
+        processed += len(stats.unique_tiles[level])
     prog.finish()
 
 def AddNetworkLink(lvl:int, id:tiling.TileId, doc:xml.etree.ElementTree):
@@ -60,7 +62,7 @@ def AddNetworkLinks(total_file_count:int):
     processed_count = 0
     for level in reversed(sorted(config.levels)):
         if level == config.levels[0]:
-            processed_count += len(tiling.unique_tiles[level])
+            processed_count += len(stats.unique_tiles[level])
             continue
 
         dir = config.temp_folder + '/' + 'Level' + str(level)
