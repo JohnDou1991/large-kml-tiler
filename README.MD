@@ -3,6 +3,11 @@ This is a super proprietary script, will not work with almost anything.
 This script exists because working with large raw kmls is bloody suffering.
 It is designed to boost search space kmls performance.
 
+### PERFORMANCE
+
+Optimizations applied by this script can provide single kmz file with no losses in content(in terms of geometry) and 
+display ~1.5m LineSrtings with a tested real-time performance.
+
 ### HOW TO USE
 
 python3 optimize-kml.py --input=PATH
