@@ -6,7 +6,7 @@ It is designed to boost search space kmls performance.
 ### PERFORMANCE
 
 Optimizations applied by this script can provide single kmz file with no losses in content(in terms of geometry) and 
-display ~1.5m LineSrtings with a tested real-time performance.
+display ~1.5m LineSrtings with real-time performance.
 
 ### HOW TO USE
 
