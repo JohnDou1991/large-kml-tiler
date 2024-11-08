@@ -1,6 +1,7 @@
 import src.common.config as config
 import src.common.stats as stats
 
+import src.dump as dump
 import src.tiling as tiling
 import src.utils.progress as progress
 
@@ -44,16 +45,18 @@ def SetUplinks(total_file_count:int):
     prog.finish()
 
 def AddNetworkLink(lvl:int, id:tiling.TileId, doc:xml.etree.ElementTree):
-    level_folder = 'Level' + str(lvl)
+    lvl_str = str(lvl)
+    level_folder = 'Level' + lvl_str
     level_dir = config.temp_folder + '/' + level_folder
     tile_id_str = str(id.x) + ':' + str(id.y)
     output_filename = level_dir + '/' + tile_id_str + '.kml'
-    kml = xml.etree.ElementTree.parse(output_filename)
-    region = kml.find(".//Region")
+
+    bbox = tiling.TileIdGenerator(lvl).getBoundingBox(id)
     nlink = xml.etree.ElementTree.SubElement(doc, "NetworkLink")
-    nlink.append(region)
+    dump.Region(nlink, bbox, lvl)
+
     link = xml.etree.ElementTree.SubElement(nlink, "Link")
-    xml.etree.ElementTree.SubElement(nlink, "name").text = 'L' + str(lvl) + ':' + tile_id_str
+    xml.etree.ElementTree.SubElement(nlink, "name").text = 'L' + lvl_str + ':' + tile_id_str
     xml.etree.ElementTree.SubElement(link, "href").text = output_filename.replace(config.temp_folder + '/', '../')
     xml.etree.ElementTree.SubElement(link, "viewRefreshMode").text = 'onRegion'
 
